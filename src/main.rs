@@ -9,6 +9,7 @@ use std::{fs, thread, time};
 #[derive(Debug, Deserialize)]
 struct Config {
     mount_points: Vec<String>,
+    delay_seconds: u64,
 }
 
 fn all_mounted() {
@@ -59,11 +60,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    // Execute on initial state
+    print!("Initial state: ");
     if current_state {
         all_mounted();
     } else {
         some_unmounted();
     }
+
+    // Loop for observation of watchers
+    println!(
+        "Starting observation loop ({} second delay)...",
+        config.delay_seconds
+    );
 
     let mut buffer = [0; 4096];
     loop {
@@ -131,8 +140,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
-        // TODO: make configurable from yaml
         // Periodic check every 5 seconds
-        thread::sleep(time::Duration::from_secs(5));
+        thread::sleep(time::Duration::from_secs(config.delay_seconds));
     }
 }

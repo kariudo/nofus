@@ -2,3 +2,4 @@ mount_points:
   - /mnt/nastea/download/
   - /mnt/nastea/container/
   - /mnt/nastea/backups/
+delay_seconds: 5
