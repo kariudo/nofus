@@ -93,5 +93,3 @@ MIT License - see [LICENSE](LICENSE) for details.
 </p>
 
 ``` 
-
-*Note: The ASCII art and GIF are placeholders - replace with your own project-specific graphics for maximum impact!* 🎨
