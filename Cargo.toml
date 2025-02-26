@@ -1,6 +1,6 @@
 [package]
 name = "nofus"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Hunter Horsman <kariudo@gmail.com>"]
 description = "A daemon for monitoring and reacting to the status of NFS mounts."
