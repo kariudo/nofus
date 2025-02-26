@@ -85,11 +85,8 @@ We welcome contributions! Please follow these steps:
 
 MIT License - see [LICENSE](LICENSE) for details.
 
----
 
 <p align="center">
   Made with ❤️ by <a href="https://github.com/kariudo">kariudo</a> | 
   ☕ <a href="https://buymeacoffee.com/kariudo">Support the developer</a>
 </p>
-
-``` 
