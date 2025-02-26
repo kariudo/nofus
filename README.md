@@ -22,18 +22,20 @@
 ## 📦 Installation
 
 1. **Prerequisites**: Ensure you have Rust installed (1.60+)
+
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
    ```
 
 2. **Install Nofus**:
+
    ```bash
    cargo install nofus
    ```
 
 ## ⚙️ Configuration
 
-Create `config.yml` in your working directory:
+Create `config.yml` in your `$HOME/.config/nofus` directory:
 
 ```yaml
 # Sample Configuration
@@ -48,6 +50,9 @@ all_mounted_cmd: "systemctl start my-app.service"
 any_unmounted_cmd: "systemctl stop my-app.service && wall 'NFS Crisis!'"
 ```
 
+> Note: If you start nofus without creating a configuration file first,
+> one will be created from a template and nofus will exit.
+
 ## 🚦 Usage
 
 ```bash
@@ -55,10 +60,12 @@ nofus [OPTIONS]
 ```
 
 **Options**:
+
 - `--dry-run`: Simulate without executing commands
 - `--verbose`: Show debug-level logging
 
 **Example**:
+
 ```bash
 nofus --verbose --dry-run
 ```
@@ -75,6 +82,7 @@ nofus --verbose --dry-run
 ## 🤝 Contributing
 
 We welcome contributions! Please follow these steps:
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feat/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
@@ -85,8 +93,7 @@ We welcome contributions! Please follow these steps:
 
 MIT License - see [LICENSE](LICENSE) for details.
 
-
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/kariudo">kariudo</a> | 
+  Made with ❤️ by <a href="https://github.com/kariudo">kariudo</a> |
   ☕ <a href="https://buymeacoffee.com/kariudo">Support the developer</a>
 </p>
