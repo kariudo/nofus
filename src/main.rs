@@ -7,7 +7,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::io::ErrorKind;
 use std::path::PathBuf;
-use std::{fs, thread, time};
+use std::{fs, process, thread, time};
 
 #[derive(Debug, Deserialize)]
 struct Config {
@@ -71,6 +71,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     builder.init();
 
     // Load configuration
+    // Path to the configuration file should default to $HOME/.config/nofus/config.yml
+    let config_path =
+        PathBuf::from(std::env::var("HOME").unwrap()).join(".config/nofus/config.yml");
+    // If the directory doesn't exist, create it
+    if !config_path.parent().unwrap().exists() {
+        debug!("Creating config directory");
+        fs::create_dir_all(config_path.parent().unwrap())?;
+    }
+    // If the config file doesn't exist, create it
+    if !config_path.exists() {
+        warn!(
+            "Creating a default config file at {}, you'll want to edit it.",
+            config_path.display()
+        );
+        let default_config = r#"mount_points:
+  - /mnt/hostname/share/
+delay_seconds: 5
+all_mounted_cmd: echo "All clear!"
+any_unmounted_cmd: echo "Very bad!"#;
+        fs::write(config_path, default_config)?;
+        process::exit(1) // Just exit because they really should update that...
+    }
     let config_content = fs::read_to_string("config.yml")?;
     let config: Config = match serde_yml::from_str(&config_content) {
         Ok(c) => c,
@@ -84,6 +106,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Check initial state and set up watches
     let mut current_state = true;
     for path in &config.mount_points {
+        info!("Monitoring mount point: {}", path);
+        //  Check state and setup watch
         if is_mount_point(path) {
             if let Ok(watch) = inotify.watches().add(path, WatchMask::ALL_EVENTS) {
                 watches.insert(path.clone(), watch);
