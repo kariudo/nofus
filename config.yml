@@ -3,3 +3,5 @@ mount_points:
   - /mnt/nastea/container/
   - /mnt/nastea/backups/
 delay_seconds: 5
+all_mounted_cmd: echo "All clear!"
+any_unmounted_cmd: echo "Very bad!"

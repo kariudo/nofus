@@ -1,3 +1,4 @@
+use clap::Parser;
 use inotify::{EventMask, Inotify, WatchDescriptor, WatchMask};
 use proc_mounts::MountIter;
 use serde::Deserialize;
@@ -10,16 +11,31 @@ use std::{fs, thread, time};
 struct Config {
     mount_points: Vec<String>,
     delay_seconds: u64,
+    all_mounted_cmd: String,
+    any_unmounted_cmd: String,
 }
 
-fn all_mounted() {
+#[derive(Parser)]
+#[clap(author, version, about, long_about = None)]
+struct Cli {
+    #[clap(long, short, action)]
+    dry_run: bool,
+}
+
+fn all_mounted(cmd: &String, dry_run: bool) {
     // TODO: actually do something useful with this, call configured safe to start cmd?
     println!("All NFS mounts are available");
+    if !dry_run {
+        println!("Running command: {}", cmd);
+    }
 }
 
-fn some_unmounted() {
+fn any_unmounted(cmd: &String, dry_run: bool) {
     // TODO: actually do something useful with this, call configured must stop cmd?
     println!("One or more NFS mounts are disconnected");
+    if !dry_run {
+        println!("Running command: {}", cmd);
+    }
 }
 
 fn is_mount_point(path: &str) -> bool {
@@ -40,9 +56,14 @@ fn is_mount_point(path: &str) -> bool {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let cli = Cli::parse();
+
     // Load configuration
     let config_content = fs::read_to_string("config.yml")?;
-    let config: Config = serde_yaml::from_str(&config_content)?;
+    let config: Config = match serde_yaml::from_str(&config_content) {
+        Ok(c) => c,
+        Err(e) => panic!("Failed to parse configuration: {}", e),
+    };
 
     // Initialize inotify
     let mut inotify = Inotify::init()?;
@@ -60,12 +81,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    // Notify if dry run
+    if cli.dry_run {
+        println!("== Dry run enabled, no commands will be executed. ==");
+    }
+
     // Execute on initial state
     print!("Initial state: ");
     if current_state {
-        all_mounted();
+        all_mounted(&config.all_mounted_cmd, cli.dry_run);
     } else {
-        some_unmounted();
+        any_unmounted(&config.any_unmounted_cmd, cli.dry_run);
     }
 
     // Loop for observation of watchers
@@ -134,9 +160,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Trigger appropriate function if state changed
         if state_changed {
             if current_state {
-                all_mounted();
+                all_mounted(&config.all_mounted_cmd, cli.dry_run);
             } else {
-                some_unmounted();
+                any_unmounted(&config.any_unmounted_cmd, cli.dry_run);
             }
         }
 
