@@ -3,6 +3,11 @@ name = "nofus"
 version = "0.1.0"
 edition = "2021"
 authors = ["Hunter Horsman <kariudo@gmail.com>"]
+description = "A daemon for monitoring and reacting to the status of NFS mounts."
+license = "MIT"
+license-file = "LICENSE"
+repository = "https://github.com/kariudo/nofus"
+homepage = "https://github.com/kariudo/nofus"
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
