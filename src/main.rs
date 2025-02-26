@@ -1,5 +1,7 @@
 use clap::Parser;
+use env_logger::Env;
 use inotify::{EventMask, Inotify, WatchDescriptor, WatchMask};
+use log::{debug, error, info, warn};
 use proc_mounts::MountIter;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -20,21 +22,23 @@ struct Config {
 struct Cli {
     #[clap(long, short, action)]
     dry_run: bool,
+    #[clap(long, short, action)]
+    verbose: bool,
 }
 
 fn all_mounted(cmd: &String, dry_run: bool) {
-    // TODO: actually do something useful with this, call configured safe to start cmd?
-    println!("All NFS mounts are available");
+    info!("All NFS mounts are available");
     if !dry_run {
-        println!("Running command: {}", cmd);
+        debug!("Running command: {}", cmd);
+        // TODO: actually do something useful with this, call configured safe to start cmd?
     }
 }
 
 fn any_unmounted(cmd: &String, dry_run: bool) {
-    // TODO: actually do something useful with this, call configured must stop cmd?
-    println!("One or more NFS mounts are disconnected");
+    error!("One or more NFS mounts are disconnected!!");
     if !dry_run {
-        println!("Running command: {}", cmd);
+        debug!("Running command: {}", cmd);
+        // TODO: actually do something useful with this, call configured must stop cmd?
     }
 }
 
@@ -56,7 +60,15 @@ fn is_mount_point(path: &str) -> bool {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Get CLI config
     let cli = Cli::parse();
+
+    // Configure the logger
+    let mut builder = env_logger::Builder::from_env(Env::default().default_filter_or("info"));
+    if cli.verbose {
+        builder.filter_level(log::LevelFilter::Trace);
+    }
+    builder.init();
 
     // Load configuration
     let config_content = fs::read_to_string("config.yml")?;
@@ -83,11 +95,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Notify if dry run
     if cli.dry_run {
-        println!("== Dry run enabled, no commands will be executed. ==");
+        warn!("== Dry run enabled, no commands will be executed. ==");
     }
 
     // Execute on initial state
-    print!("Initial state: ");
+    info!("Initial state: ");
     if current_state {
         all_mounted(&config.all_mounted_cmd, cli.dry_run);
     } else {
@@ -95,7 +107,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Loop for observation of watchers
-    println!(
+    debug!(
         "Starting observation loop ({} second delay)...",
         config.delay_seconds
     );
@@ -155,7 +167,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // Job done, how long did it take?
         let elapsed = start_time.elapsed();
-        println!("Processed events in {}ms", elapsed.as_millis());
+        debug!("Processed events in {}ms", elapsed.as_millis());
 
         // Trigger appropriate function if state changed
         if state_changed {
