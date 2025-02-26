@@ -28,7 +28,7 @@
 
 2. **Install Nofus**:
    ```bash
-   cargo install --git https://github.com/kariudo/nofus
+   cargo install nofus
    ```
 
 ## ⚙️ Configuration
