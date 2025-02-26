@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Load configuration
     let config_content = fs::read_to_string("config.yml")?;
-    let config: Config = match serde_yaml::from_str(&config_content) {
+    let config: Config = match serde_yml::from_str(&config_content) {
         Ok(c) => c,
         Err(e) => panic!("Failed to parse configuration: {}", e),
     };
