@@ -50,7 +50,8 @@ all_mounted_cmd: "systemctl start my-app.service"
 any_unmounted_cmd: "systemctl stop my-app.service && wall 'NFS Crisis!'"
 ```
 
-> Note: If you start nofus without creating a configuration file first,
+> [!TIP]
+> If you start nofus without creating a configuration file first,
 > one will be created from a template and nofus will exit.
 
 ## 🚦 Usage
