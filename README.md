@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![CI/CD](https://github.com/kariudo/nofus/actions/workflows/rust.yml/badge.svg)](https://github.com/kariudo/nofus/actions)
 
-**Nofus** is a _blazingly fast and memory-safe_ Rust-powered daemon that vigilantly monitors your NFS mounts and triggers custom actions based on their availability. Never get caught with stale mounts again! 🛡️
+**Nofus** is a _🔥 blazingly-fast, 🧠 memory-safe, 🔋 batteries-included, 💺ergonomic, 🦀 100% Rust-powered_ daemon that vigilantly monitors your NFS mounts and triggers custom actions based on their availability. Never get caught with stale mounts again! 🛡️
 
 <p align="center">
   <img src="https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif" alt="Important GIF" width="300"/>
