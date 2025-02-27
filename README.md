@@ -21,7 +21,7 @@
 
 ## 📦 Installation
 
-1. **Prerequisites**: Ensure you have Rust installed (1.60+)
+1. **Prerequisites**: _If you want to run the project from source, or install from cargo directly._ Ensure you have Rust installed (1.60+)
 
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
