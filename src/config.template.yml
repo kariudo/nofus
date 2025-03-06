@@ -1,0 +1,5 @@
+mount_points:
+  - /mnt/hostname/share/
+delay_seconds: 5
+all_mounted_cmd: echo "All clear!"
+any_unmounted_cmd: echo "Very bad!"

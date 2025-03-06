@@ -7,7 +7,8 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::io::ErrorKind;
 use std::path::PathBuf;
-use std::{fs, process, thread, time};
+use std::process::Command;
+use std::{env, fs, process, thread, time};
 
 #[derive(Debug, Deserialize)]
 struct Config {
@@ -18,30 +19,45 @@ struct Config {
 }
 
 #[derive(Parser)]
-#[clap(author, version, about, long_about = None)]
+#[clap(author, version, about, long_about = "A reliable NFS mount monitor.")]
 struct Cli {
     #[clap(long, short, action)]
     dry_run: bool,
     #[clap(long, short, action)]
     verbose: bool,
+    #[clap(long, short)]
+    config: Option<String>,
 }
 
+// Handle the case where all the mounts are mounted
 fn all_mounted(cmd: &String, dry_run: bool) {
     info!("All NFS mounts are available");
     if !dry_run {
         debug!("Running command: {}", cmd);
-        // TODO: actually do something useful with this, call configured safe to start cmd?
+        run_command(cmd).expect("Failed to run command");
+    } else {
+        info!(
+            "Dry run enabled, no commands will be executed.\n Would run: {}",
+            cmd
+        );
     }
 }
 
+// Hanle the case where the mounts are not all mounted
 fn any_unmounted(cmd: &String, dry_run: bool) {
     error!("One or more NFS mounts are disconnected!!");
     if !dry_run {
         debug!("Running command: {}", cmd);
-        // TODO: actually do something useful with this, call configured must stop cmd?
+        run_command(cmd).expect("Failed to run command");
+    } else {
+        info!(
+            "Dry run enabled, no commands will be executed.\n Would run: {}",
+            cmd
+        );
     }
 }
 
+// Check if the path is a mount point
 fn is_mount_point(path: &str) -> bool {
     // Get the systems mount points from /proc/mounts
     let Ok(canonical_path) = PathBuf::from(path).canonicalize() else {
@@ -59,6 +75,22 @@ fn is_mount_point(path: &str) -> bool {
         .any(|p| p == canonical_path)
 }
 
+// Run a command
+fn run_command(command_string: &str) -> Result<(), String> {
+    Command::new("sh")
+        .arg("-c")
+        .arg(command_string)
+        .status()
+        .map_err(|e| format!("Failed to execute command: {}", e))
+        .and_then(|status| {
+            if status.success() {
+                Ok(())
+            } else {
+                Err(format!("Command failed with status: {}", status))
+            }
+        })
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get CLI config
     let cli = Cli::parse();
@@ -71,29 +103,37 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     builder.init();
 
     // Load configuration
-    // Path to the configuration file should default to $HOME/.config/nofus/config.yml
-    let config_path =
-        PathBuf::from(std::env::var("HOME").unwrap()).join(".config/nofus/config.yml");
+    // Path to the configuration file should default to $HOME/.config/nofus/config.yml or
+    // /etc/nofus/config.yml if no user context.
+    let config_path = match cli.config {
+        Some(path) => PathBuf::from(path), // Use the provided config path
+        None => {
+            // Fallback to default paths if no config is provided
+            match env::var("HOME") {
+                Ok(home) => PathBuf::from(home).join(".config/nofus/config.yml"),
+                Err(_) => PathBuf::from("/etc/nofus/config.yml"),
+            }
+        }
+    };
+    debug!("Using config file at: {}", config_path.display());
+
     // If the directory doesn't exist, create it
     if !config_path.parent().unwrap().exists() {
         debug!("Creating config directory");
         fs::create_dir_all(config_path.parent().unwrap())?;
     }
+
     // If the config file doesn't exist, create it
     if !config_path.exists() {
         warn!(
             "Creating a default config file at {}, you'll want to edit it.",
             config_path.display()
         );
-        let default_config = r#"mount_points:
-  - /mnt/hostname/share/
-delay_seconds: 5
-all_mounted_cmd: echo "All clear!"
-any_unmounted_cmd: echo "Very bad!"#;
+        let default_config = include_str!("config.template.yml");
         fs::write(config_path, default_config)?;
         process::exit(1) // Just exit because they really should update that...
     }
-    let config_content = fs::read_to_string("config.yml")?;
+    let config_content = fs::read_to_string(config_path)?;
     let config: Config = match serde_yml::from_str(&config_content) {
         Ok(c) => c,
         Err(e) => panic!("Failed to parse configuration: {}", e),

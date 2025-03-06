@@ -1,0 +1,13 @@
+[Unit]
+Description=Nofus mount guardian daemon
+After=network.target docker.service
+# Include any mounts you want to wait for here i.e.: mnt-nastea-backups.mount
+
+[Service]
+Environment="RUST_LOG=error"
+ExecStart=/home/kariudo/code/nofus/target/release/nofus --dry-run
+#ExecStart=/home/kariudo/.cargo/bin/nofus --dry-run
+
+[Install]
+WantedBy=multi-user.target
+
