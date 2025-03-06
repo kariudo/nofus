@@ -308,7 +308,7 @@ dependencies = [
 
 [[package]]
 name = "nofus"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "clap",
  "env_logger",
